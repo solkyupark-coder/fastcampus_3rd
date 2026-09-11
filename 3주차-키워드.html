@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="MCP 서버, 플러그인, 127.0.0.1, 오픈소스, DAE, SketchUp MCP, Scene, 컴포넌트, 나노바나나, rhwp, FreeCAD MCP, 배포, 검증 용어 카드">
+  <title>3주차 키워드</title>
+  <style>
+    :root {
+      --paper: #e9e4da;
+      --card: #fffdf8;
+      --ink: #27354a;
+      --muted: #657083;
+      --line: #c8c0b2;
+      --accent: #b64f36;
+      --soft: #f2eee6;
+      --shadow: 0 18px 46px rgba(39, 53, 74, .16);
+    }
+    * { box-sizing: border-box; }
+    html { color-scheme: light; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100dvh;
+      overflow: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 84% 10%, rgba(255,255,255,.75), transparent 28rem),
+        var(--paper);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid #2d68a7; outline-offset: 3px; }
+    .app {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      width: min(100%, 1500px);
+      height: 100dvh;
+      margin: 0 auto;
+      padding: 20px 24px 18px;
+    }
+    .masthead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--accent);
+      font: 700 13px/1.2 Consolas, "Courier New", monospace;
+      letter-spacing: .12em;
+    }
+    h1 {
+      margin: 3px 0 0;
+      font-size: clamp(22px, 2.2vw, 34px);
+      line-height: 1.15;
+      letter-spacing: -.04em;
+    }
+    .intro {
+      max-width: 560px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      text-align: right;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: 228px minmax(0, 1fr);
+      gap: clamp(20px, 3vw, 46px);
+      min-height: 0;
+    }
+    .terms {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-width: 0;
+      overflow: auto;
+      padding-top: 2px;
+    }
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .group-label {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font: 700 11px/1 Consolas, "Courier New", monospace;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .term {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 40px;
+      padding: 7px 10px;
+      border: 0;
+      border-left: 3px solid transparent;
+      color: var(--muted);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .term:hover { color: var(--ink); background: rgba(255,255,255,.42); }
+    .term:active { transform: translateX(2px); }
+    .term[aria-current="true"] {
+      border-left-color: var(--accent);
+      color: var(--ink);
+      background: var(--card);
+      box-shadow: 0 4px 14px rgba(39, 53, 74, .08);
+    }
+    .term-number {
+      color: var(--accent);
+      font: 700 12px/1 Consolas, "Courier New", monospace;
+    }
+    .term-name {
+      overflow: hidden;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stage {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      perspective: 1800px;
+    }
+    .card {
+      position: relative;
+      align-self: stretch;
+      justify-self: center;
+      width: min(100%, 960px);
+      min-height: 0;
+      cursor: pointer;
+    }
+    .card.is-snap .face {
+      transition: none;
+    }
+    .face {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 0;
+      padding: clamp(16px, 2.2vw, 28px);
+      overflow: hidden;
+      border: 1px solid rgba(39, 53, 74, .16);
+      border-radius: 3px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform-origin: center center;
+      transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .front {
+      transform: rotateY(0deg);
+      z-index: 1;
+    }
+    .back {
+      transform: rotateY(180deg);
+      z-index: 0;
+    }
+    .card.is-flipped .front {
+      transform: rotateY(-180deg);
+      z-index: 0;
+    }
+    .card.is-flipped .back {
+      transform: rotateY(0deg) scale(1.02);
+      z-index: 1;
+    }
+    .face-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 0;
+    }
+    .face h2 {
+      margin: 0;
+      font: 700 clamp(30px, 4vw, 54px)/1 Consolas, "Courier New", monospace;
+      letter-spacing: -.05em;
+    }
+    .side-label {
+      color: var(--accent);
+      font: 700 12px/1 Consolas, "Courier New", monospace;
+      letter-spacing: .12em;
+    }
+    .front {
+      grid-template-rows: auto minmax(220px, 1fr) auto;
+      gap: 0.5rem;
+    }
+    .front-body { display: contents; }
+    .visual {
+      display: grid;
+      align-self: stretch;
+      min-height: 220px;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--soft);
+    }
+    .visual img, .visual svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      object-fit: contain;
+      object-position: center;
+    }
+    .copy, .back-copy {
+      display: grid;
+      gap: 0.9em;
+      word-break: keep-all;
+    }
+    .copy {
+      align-self: start;
+      max-width: 760px;
+      font-size: clamp(15px, 1.25vw, 18px);
+      line-height: 1.55;
+    }
+    .back-body {
+      display: grid;
+      align-content: center;
+      gap: 1em;
+      min-height: 0;
+      padding: 0;
+    }
+    .back-copy {
+      max-width: 790px;
+      font-size: clamp(16px, 1.4vw, 20px);
+      line-height: 1.55;
+    }
+    .block { margin: 0; }
+    .block h3 {
+      margin: 0 0 0.18em;
+      color: var(--accent);
+      font-size: 0.78em;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .block p { margin: 0; line-height: 1.55; }
+    .source {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: auto auto minmax(180px, 360px) auto;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .control {
+      min-height: 48px;
+      padding: 0 18px;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      background: var(--card);
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease;
+    }
+    .control:hover { background: #f7f2e9; }
+    .control:active { transform: translateY(1px); }
+    .flip {
+      border-color: var(--accent);
+      color: #fff;
+      background: var(--accent);
+      font-weight: 700;
+    }
+    .flip:hover { background: #98402d; }
+    .counter {
+      min-width: 62px;
+      margin: 0;
+      text-align: center;
+      font: 700 14px/1 Consolas, "Courier New", monospace;
+    }
+    @media (max-width: 760px) {
+      body { overflow: hidden; }
+      .app {
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 12px 12px 10px;
+      }
+      .masthead { display: block; }
+      .eyebrow { font-size: 11px; }
+      h1 { margin-top: 2px; font-size: 21px; }
+      .intro { display: none; }
+      .workspace { display: contents; }
+      .terms {
+        grid-row: 2;
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+        overflow: visible;
+        padding: 0 1px 4px;
+      }
+      .group {
+        flex-direction: row;
+        align-items: center;
+        flex: 0 0 auto;
+        gap: 6px;
+        overflow-x: auto;
+        padding-right: 0;
+        border-right: 0;
+        scrollbar-width: thin;
+        scroll-snap-type: x proximity;
+      }
+      .group-label { margin: 0; flex: 0 0 auto; }
+      .term {
+        display: block;
+        flex: 0 0 auto;
+        width: auto;
+        min-height: 42px;
+        padding: 8px 13px;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        background: rgba(255,255,255,.45);
+        scroll-snap-align: start;
+        text-align: center;
+      }
+      .term[aria-current="true"] { border-color: var(--accent); background: var(--card); }
+      .term-number { display: none; }
+      .stage { grid-row: 3; }
+      .face { padding: 16px; border-radius: 2px; }
+      .face-head { margin-bottom: 0; }
+      .face h2 { font-size: clamp(27px, 8vw, 36px); }
+      .front {
+        grid-template-rows: auto auto auto;
+        align-content: start;
+        gap: 0.4rem;
+      }
+      .visual {
+        min-height: 220px;
+        height: auto;
+        width: calc(100% + 32px);
+        margin-left: -16px;
+        border-left: 0;
+        border-right: 0;
+        aspect-ratio: 960 / 520;
+      }
+      .visual img, .visual svg { min-height: 0; height: 100%; }
+      .copy { font-size: clamp(13px, 3.5vw, 15px); line-height: 1.48; }
+      .copy, .back-copy { gap: 0.8em; }
+      .back-body { gap: 0.8em; padding: 0.4vh 0 0; }
+      .back-copy { font-size: clamp(14px, 3.8vw, 16px); line-height: 1.5; }
+      .controls {
+        grid-row: 4;
+        grid-template-columns: auto auto 1fr auto;
+        gap: 6px;
+      }
+      .control { min-height: 44px; padding: 0 12px; }
+      .counter { min-width: 48px; font-size: 12px; }
+    }
+    @media (min-width: 761px) {
+      .visual { min-height: 360px; }
+    }
+    @media (max-width: 370px) {
+      .app { padding-top: 8px; gap: 7px; }
+      .copy { font-size: 13px; line-height: 1.42; }
+      .back-copy { font-size: 13px; line-height: 1.45; }
+      .source { font-size: 10px; }
+      .control { padding: 0 9px; font-size: 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+      .card,
+      .card.is-flipped,
+      .front,
+      .back {
+        transform: none !important;
+      }
+      .back {
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .card.is-flipped .front {
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .card.is-flipped .back {
+        visibility: visible;
+        pointer-events: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">FASTCAMPUS · LAND DEVELOPMENT</p>
+        <h1>3주차 키워드</h1>
+      </div>
+      <p class="intro">AI가 열려 있는 설계 프로그램을 대신 만지는 구조 — MCP, 플러그인, 오픈소스 도구, 그리고 결과물로 확인하는 법.</p>
+    </header>
+
+    <div class="workspace">
+      <nav class="terms" aria-label="용어 목록"></nav>
+      <section class="stage" aria-live="polite" aria-label="용어 카드">
+        <article class="card" tabindex="0" aria-label="카드를 눌러 앞뒤 보기">
+          <div class="face front"></div>
+          <div class="face back"></div>
+        </article>
+      </section>
+    </div>
+
+    <footer class="controls">
+      <button class="control" id="prev" type="button" aria-label="이전 용어">이전</button>
+      <p class="counter" aria-live="polite"><span id="current">01</span> / 16</p>
+      <button class="control flip" id="flip" type="button" aria-pressed="false">설명 뒤집기</button>
+      <button class="control" id="next" type="button" aria-label="다음 용어">다음</button>
+    </footer>
+  </main>
+
+  <script>
+    const cards = [
+      {
+        term: "MCP 서버",
+        group: "core",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">WORDS IN, PROGRAM MOVES</text>
+<rect x="60" y="96" width="200" height="130" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="160" y="140" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">01 · 내가 말한다</text>
+<text x="160" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="19" font-weight="700" fill="#27354a">Claude Code</text>
+<text x="160" y="202" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">"박스 하나 만들어 줘"</text>
+<path d="M262 161h68" stroke="#c85f43" stroke-width="5"/><polygon points="330,152 350,161 330,170" fill="#c85f43"/>
+<text x="306" y="143" text-anchor="middle" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#c85f43">stdio</text>
+<rect x="352" y="96" width="212" height="130" rx="8" fill="#27354a"/>
+<text x="458" y="140" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">02 · 통역한다</text>
+<text x="458" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="19" font-weight="700" fill="#fffdf8">MCP 서버</text>
+<text x="458" y="202" text-anchor="middle" font-family="Arial" font-size="13" fill="#f1d6c8">sketchup-mcp</text>
+<path d="M566 161h68" stroke="#c85f43" stroke-width="5"/><polygon points="634,152 654,161 634,170" fill="#c85f43"/>
+<text x="600" y="143" text-anchor="middle" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#c85f43">socket</text>
+<rect x="656" y="96" width="244" height="130" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="778" y="140" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">03 · 실행한다</text>
+<text x="778" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="19" font-weight="700" fill="#27354a">플러그인</text>
+<text x="778" y="202" text-anchor="middle" font-family="Consolas, monospace" font-size="13" fill="#536174">127.0.0.1:9876</text>
+<path d="M778 232v44" stroke="#27354a" stroke-width="3"/><polygon points="769,276 778,296 787,276" fill="#27354a"/>
+<rect x="600" y="300" width="300" height="96" rx="8" fill="#b64f36"/>
+<text x="750" y="340" text-anchor="middle" font-family="Arial" font-size="13" fill="#f1d6c8">04 · 그려진다</text>
+<text x="750" y="372" text-anchor="middle" font-family="Consolas, monospace" font-size="19" font-weight="700" fill="#fffdf8">SketchUp · FreeCAD</text>
+<rect x="60" y="300" width="480" height="96" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="336" font-family="Arial" font-size="15" font-weight="700" fill="#27354a">AI가 스케치업을 아는 게 아니다</text>
+<text x="88" y="366" font-family="Arial" font-size="14" fill="#536174">열려 있는 프로그램에 명령을 보내는 것이다</text>
+<text x="60" y="450" font-family="Arial" font-size="14" fill="#536174">한 다리라도 끊기면 — 에러 없이 조용히 아무 일도 일어나지 않는다.</text>
+</svg>`,
+        alt: "Claude Code에서 MCP 서버, 플러그인을 거쳐 스케치업까지 명령이 전달되는 네 단계 사슬 그림",
+        front: [
+          { h: "정의", p: "MCP(Model Context Protocol)는 AI에게 바깥 도구를 연결해 주는 공통 규격이고, MCP 서버는 그 규격을 말하는 작은 프로그램입니다. 내가 한 말을 스케치업이나 FreeCAD가 알아듣는 명령으로 바꿔서 전달합니다." },
+          { h: "비유", p: "통역사입니다. 나는 한국어로 말하고 프로그램은 자기 API 언어만 알아듣습니다. 가운데 통역이 없으면 대화 자체가 성립하지 않습니다." }
+        ],
+        back: [
+          { h: "경로", p: "Claude Code → (stdio) → MCP 서버 → (소켓 127.0.0.1) → 플러그인 → 프로그램. 네 다리 중 하나만 끊겨도 에러 없이 조용히 아무 일도 일어나지 않는 것이 이 구조의 특징입니다." },
+          { h: "예시", p: "오늘 쓰는 서버는 sketchup-mcp(9876)과 freecad-mcp(9875)입니다. 둘 다 남이 만들어 공개해 둔 것을 설치만 해서 씁니다." },
+          { h: "다음", p: "서버가 명령을 보내도 프로그램 안에서 그것을 받아 줄 귀가 필요합니다. 그게 플러그인입니다." },
+          { h: "혼동", p: "'AI가 스케치업을 배웠다'고 오해하기 쉽습니다. AI는 스케치업을 모릅니다. 열려 있는 프로그램에 명령을 보낼 뿐이라 프로그램이 꺼져 있으면 아무 일도 안 일어납니다." }
+        ],
+        source: "참고: modelcontextprotocol.io · 3주차 슬라이드 「MCP 구조」"
+      },
+      {
+        term: "플러그인 / 애드온",
+        group: "core",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">THE EAR INSIDE THE PROGRAM</text>
+<rect x="60" y="92" width="400" height="330" rx="10" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="90" y="130" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">SketchUp Pro</text>
+<line x1="90" y1="146" x2="430" y2="146" stroke="#c8c0b2" stroke-width="2"/>
+<rect x="90" y="168" width="340" height="86" rx="6" fill="#27354a"/>
+<text x="112" y="200" font-family="Arial" font-size="14" fill="#cad9d3">Plugins &gt; MCP Server</text>
+<rect x="112" y="212" width="160" height="30" rx="4" fill="#c85f43"/>
+<text x="192" y="233" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#fffdf8">Start Server</text>
+<text x="292" y="233" font-family="Consolas, monospace" font-size="13" fill="#f1d6c8">:9876</text>
+<text x="90" y="292" font-family="Arial" font-size="14" fill="#536174">Ruby 확장이 스케치업 내부 API를 대신 호출</text>
+<text x="90" y="322" font-family="Arial" font-size="14" fill="#536174">Pro · Studio 라이선스 필요</text>
+<rect x="90" y="346" width="340" height="52" rx="6" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<text x="110" y="378" font-family="Arial" font-size="14" fill="#27354a">설치했다 ≠ 켜져 있다</text>
+<rect x="500" y="92" width="400" height="330" rx="10" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="530" y="130" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">FreeCAD</text>
+<line x1="530" y1="146" x2="870" y2="146" stroke="#c8c0b2" stroke-width="2"/>
+<rect x="530" y="168" width="340" height="86" rx="6" fill="#27354a"/>
+<text x="552" y="200" font-family="Arial" font-size="14" fill="#cad9d3">워크벤치 &gt; MCP Addon</text>
+<rect x="552" y="212" width="196" height="30" rx="4" fill="#c85f43"/>
+<text x="650" y="233" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#fffdf8">Start RPC Server</text>
+<text x="768" y="233" font-family="Consolas, monospace" font-size="13" fill="#f1d6c8">:9875</text>
+<text x="530" y="292" font-family="Arial" font-size="14" fill="#536174">Python 애드온이 문서·물체를 대신 생성</text>
+<text x="530" y="322" font-family="Arial" font-size="14" fill="#536174">워크벤치 목록에서 고른다</text>
+<rect x="530" y="346" width="340" height="52" rx="6" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<text x="550" y="378" font-family="Arial" font-size="14" fill="#27354a">포트가 서로 다르다</text>
+<text x="60" y="470" font-family="Arial" font-size="14" fill="#536174">전화벨은 울리는데 받는 사람이 없으면, 연결은 되고 아무것도 안 된다.</text>
+</svg>`,
+        alt: "스케치업 플러그인과 프리캐드 애드온이 각각 프로그램 안에서 서버를 켜고 9876, 9875 포트로 듣고 있는 그림",
+        front: [
+          { h: "정의", p: "플러그인(애드온·확장)은 프로그램 안에 설치되어 그 프로그램의 내부 기능을 대신 호출해 주는 부품입니다. 스케치업은 Plugins 메뉴의 Ruby 확장, FreeCAD는 워크벤치로 붙는 Python 애드온입니다. MCP 서버가 보낸 명령을 실제로 실행하는 손입니다." },
+          { h: "비유", p: "건물 안에 앉아 있는 당직자입니다. 밖에서 내선으로 전화를 걸면 받아서 실제로 문을 열어 줍니다. 당직자가 자리에 없으면 전화벨만 울리고 끝입니다." }
+        ],
+        back: [
+          { h: "켜는 법", p: "스케치업은 Plugins &gt; MCP Server &gt; Start Server, FreeCAD는 워크벤치 목록에서 MCP Addon을 고른 뒤 Start RPC Server. 프로그램을 새로 켤 때마다 다시 눌러야 합니다." },
+          { h: "예시", p: "같은 구조가 Rhino, Revit, Premiere Pro에도 있습니다. 프로그램마다 플러그인만 다르고 그림은 오늘 본 것과 똑같습니다." },
+          { h: "다음", p: "플러그인이 듣고 있는 창구가 stdio와 소켓입니다. 어떤 말로 오가는지 다음 카드에서 봅니다." },
+          { h: "혼동", p: "설치했으니 연결이 끝났다고 오해하기 쉽습니다. 설치는 당직자를 배치한 것이고, Start Server는 그 사람이 전화기를 든 것입니다. 둘은 다릅니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「세 다리 연결」 · SketchUp Ruby API, FreeCAD Addon 문서"
+      },
+      {
+        term: "stdio · RPC",
+        group: "core",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">TWO KINDS OF PIPE</text>
+<rect x="60" y="92" width="840" height="150" rx="10" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="88" y="130" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#c85f43">stdio</text>
+<text x="160" y="130" font-family="Arial" font-size="14" fill="#536174">표준 입출력 — 같은 컴퓨터에서 켠 자식 프로그램과 직접 주고받는다</text>
+<rect x="88" y="150" width="230" height="66" rx="6" fill="#27354a"/>
+<text x="203" y="190" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">Claude Code</text>
+<path d="M320 183h96" stroke="#c85f43" stroke-width="5"/><polygon points="416,174 436,183 416,192" fill="#c85f43"/>
+<text x="368" y="168" text-anchor="middle" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#c85f43">stdin/stdout</text>
+<rect x="438" y="150" width="230" height="66" rx="6" fill="#27354a"/>
+<text x="553" y="190" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">MCP 서버</text>
+<text x="700" y="178" font-family="Arial" font-size="13" fill="#536174">주소도 포트도 없다</text>
+<text x="700" y="202" font-family="Arial" font-size="13" fill="#536174">프로세스끼리 직결</text>
+<rect x="60" y="266" width="840" height="164" rx="10" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="88" y="304" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#c85f43">RPC</text>
+<text x="160" y="304" font-family="Arial" font-size="14" fill="#536174">원격 프로시저 호출 — 주소:포트로 "이 함수를 실행해 줘"라고 보낸다</text>
+<rect x="88" y="324" width="230" height="66" rx="6" fill="#27354a"/>
+<text x="203" y="364" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">MCP 서버</text>
+<path d="M320 357h96" stroke="#c85f43" stroke-width="5"/><polygon points="416,348 436,357 416,366" fill="#c85f43"/>
+<text x="368" y="342" text-anchor="middle" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#c85f43">127.0.0.1</text>
+<rect x="438" y="324" width="230" height="66" rx="6" fill="#b64f36"/>
+<text x="553" y="364" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">플러그인 / 애드온</text>
+<text x="700" y="352" font-family="Consolas, monospace" font-size="13" fill="#536174">SketchUp · socket 9876</text>
+<text x="700" y="376" font-family="Consolas, monospace" font-size="13" fill="#536174">FreeCAD · XML-RPC 9875</text>
+<text x="60" y="470" font-family="Arial" font-size="14" fill="#536174">이름이 달라도 하는 일은 같다 — 한쪽이 요청하고, 다른 쪽이 실행하고 답한다.</text>
+</svg>`,
+        alt: "위쪽은 stdio로 Claude Code와 MCP 서버가 직결되고, 아래쪽은 RPC로 MCP 서버가 127.0.0.1 포트를 통해 플러그인을 호출하는 그림",
+        front: [
+          { h: "정의", p: "stdio는 같은 컴퓨터에서 켠 프로그램과 표준 입출력으로 직접 주고받는 방식이고, RPC(원격 프로시저 호출)는 주소와 포트를 통해 '이 기능을 실행해 달라'고 요청하는 방식입니다. Claude Code와 MCP 서버 사이는 stdio, MCP 서버와 플러그인 사이는 소켓·XML-RPC입니다." },
+          { h: "비유", p: "stdio는 옆자리에 대고 말하는 것이고, RPC는 내선 전화를 거는 것입니다. 거리와 방법만 다르지 '해 달라고 시키고 결과를 받는다'는 점은 같습니다." }
+        ],
+        back: [
+          { h: "차이", p: "stdio는 주소·포트가 없고 부모가 자식 프로그램을 직접 켜서 파이프로 연결합니다. RPC는 주소(127.0.0.1)와 포트(9876·9875)가 필요해서, 상대가 그 번호로 듣고 있지 않으면 요청이 허공에 갑니다." },
+          { h: "예시", p: "FreeCAD는 XML-RPC로 9875, 스케치업 플러그인은 소켓으로 9876을 씁니다. 설정 파일에 적힌 포트와 프로그램이 실제로 여는 포트가 같아야 합니다." },
+          { h: "다음", p: "그 주소가 왜 항상 127.0.0.1인지, 그래서 무엇이 밖으로 나가지 않는지를 다음 카드에서 봅니다." },
+          { h: "혼동", p: "'RPC니까 인터넷을 거친다'고 오해하기 쉽습니다. 오늘의 RPC는 전부 내 컴퓨터 안 루프백 주소로만 오갑니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「Claude Code └ stdio ▶ mcp └ socket ▶ 플러그인」"
+      },
+      {
+        term: "127.0.0.1 · 포트",
+        group: "core",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">EVERYTHING STAYS ON THIS MACHINE</text>
+<rect x="60" y="88" width="600" height="352" rx="12" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="88" y="126" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#27354a">내 컴퓨터 · 127.0.0.1 (localhost)</text>
+<line x1="88" y1="142" x2="632" y2="142" stroke="#c8c0b2" stroke-width="2"/>
+<rect x="88" y="166" width="240" height="72" rx="6" fill="#27354a"/>
+<text x="208" y="200" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">sketchup-mcp</text>
+<text x="208" y="224" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">MCP 서버</text>
+<path d="M330 202h52" stroke="#c85f43" stroke-width="5"/><polygon points="382,193 400,202 382,211" fill="#c85f43"/>
+<text x="356" y="186" text-anchor="middle" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#c85f43">9876</text>
+<rect x="402" y="166" width="230" height="72" rx="6" fill="#fffdf8" stroke="#27354a" stroke-width="2"/>
+<text x="517" y="200" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#27354a">SketchUp</text>
+<text x="517" y="224" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">플러그인이 듣는 중</text>
+<rect x="88" y="262" width="240" height="72" rx="6" fill="#27354a"/>
+<text x="208" y="296" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">freecad-mcp</text>
+<text x="208" y="320" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">MCP 서버</text>
+<path d="M330 298h52" stroke="#c85f43" stroke-width="5"/><polygon points="382,289 400,298 382,307" fill="#c85f43"/>
+<text x="356" y="282" text-anchor="middle" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#c85f43">9875</text>
+<rect x="402" y="262" width="230" height="72" rx="6" fill="#fffdf8" stroke="#27354a" stroke-width="2"/>
+<text x="517" y="296" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#27354a">FreeCAD</text>
+<text x="517" y="320" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">애드온이 듣는 중</text>
+<text x="88" y="392" font-family="Arial" font-size="14" fill="#536174">포트 = 같은 주소 안에서 누가 듣고 있는지 구분하는 내선 번호</text>
+<line x1="690" y1="88" x2="690" y2="440" stroke="#c85f43" stroke-width="3" stroke-dasharray="8 8"/>
+<text x="712" y="126" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">밖으로 안 나간다</text>
+<rect x="712" y="150" width="188" height="150" rx="8" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<text x="806" y="188" text-anchor="middle" font-family="Arial" font-size="14" fill="#536174">모델 · 도면</text>
+<text x="806" y="216" text-anchor="middle" font-family="Arial" font-size="14" fill="#536174">한글 문서</text>
+<text x="806" y="244" text-anchor="middle" font-family="Arial" font-size="14" fill="#536174">캡처 이미지</text>
+<text x="806" y="278" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="#27354a">전부 로컬</text>
+<text x="712" y="336" font-family="Arial" font-size="13" fill="#536174">인터넷으로 나가는 건</text>
+<text x="712" y="358" font-family="Arial" font-size="13" fill="#536174">내가 AI에게 하는 말뿐</text>
+<text x="60" y="482" font-family="Arial" font-size="14" fill="#536174">이미 그 번호를 쓰는 프로그램이 있으면 연결이 실패한다 — 포트 충돌.</text>
+</svg>`,
+        alt: "127.0.0.1 안에서 MCP 서버가 9876, 9875 포트로 각각 스케치업과 프리캐드에 연결되고 파일은 밖으로 나가지 않는 그림",
+        front: [
+          { h: "정의", p: "127.0.0.1은 '이 컴퓨터 자신'을 가리키는 주소(localhost)이고, 포트는 그 안에서 어떤 프로그램이 듣고 있는지 구분하는 번호입니다. 스케치업 플러그인은 9876, FreeCAD 애드온은 9875를 씁니다." },
+          { h: "비유", p: "같은 건물 안의 내선 번호입니다. 밖으로 나가는 전화가 아니라 층과 층 사이에서 거는 전화라, 통화 내용이 건물 밖으로 새지 않습니다." }
+        ],
+        back: [
+          { h: "의미", p: "모델·도면·한글 문서는 전부 내 컴퓨터 안에 있고, 오가는 것은 '박스를 만들어라' 같은 명령뿐입니다. 실무 파일을 외부 서버에 올리지 않고도 자동화가 됩니다." },
+          { h: "예시", p: "포트를 잘못 적으면(9875를 9876으로) 연결은 되는 것처럼 보여도 상대가 없어 응답이 없습니다. 이미 그 번호를 쓰는 프로그램이 있으면 포트 충돌로 서버가 안 뜹니다." },
+          { h: "다음", p: "이 구조를 남이 만들어 공개해 둔 덕분에 오늘은 설치만 하면 됩니다. 그게 오픈소스입니다." },
+          { h: "혼동", p: "'MCP를 쓰면 내 모델이 어딘가로 업로드된다'고 오해하기 쉽습니다. 도구 연결은 로컬 소켓이고, 업로드가 일어나는 건 내가 이미지나 텍스트를 직접 AI에 붙여 넣을 때입니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「전부 내 컴퓨터 안이다 · 127.0.0.1」"
+      },
+      {
+        term: "오픈소스",
+        group: "core",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">SOMEBODY ALREADY BUILT IT</text>
+<rect x="60" y="88" width="420" height="352" rx="10" fill="#27354a"/>
+<text x="90" y="128" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#fffdf8">오늘 쓰는 오픈소스</text>
+<line x1="90" y1="144" x2="450" y2="144" stroke="#3d4c63" stroke-width="2"/>
+<text x="90" y="182" font-family="Consolas, monospace" font-size="15" fill="#cad9d3">sketchup-mcp</text>
+<text x="450" y="182" text-anchor="end" font-family="Arial" font-size="13" fill="#f1d6c8">스케치업</text>
+<text x="90" y="222" font-family="Consolas, monospace" font-size="15" fill="#cad9d3">freecad-mcp</text>
+<text x="450" y="222" text-anchor="end" font-family="Arial" font-size="13" fill="#f1d6c8">FreeCAD</text>
+<text x="90" y="262" font-family="Consolas, monospace" font-size="15" fill="#cad9d3">rhwp</text>
+<text x="450" y="262" text-anchor="end" font-family="Arial" font-size="13" fill="#f1d6c8">한글 문서</text>
+<text x="90" y="302" font-family="Consolas, monospace" font-size="15" fill="#cad9d3">rhinomcp</text>
+<text x="450" y="302" text-anchor="end" font-family="Arial" font-size="13" fill="#f1d6c8">라이노</text>
+<text x="90" y="342" font-family="Consolas, monospace" font-size="15" fill="#cad9d3">hwp-mcp</text>
+<text x="450" y="342" text-anchor="end" font-family="Arial" font-size="13" fill="#f1d6c8">한컴 조종</text>
+<rect x="90" y="368" width="360" height="46" rx="6" fill="#b64f36"/>
+<text x="270" y="397" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#fffdf8">설치해서 쓴다 · 오늘 짜지 않는다</text>
+<text x="516" y="128" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">고를 때 보는 것</text>
+<rect x="516" y="148" width="384" height="64" rx="6" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="538" y="176" font-family="Arial" font-size="14" font-weight="700" fill="#27354a">최근 커밋 날짜</text>
+<text x="538" y="200" font-family="Arial" font-size="13" fill="#536174">1년째 멈춰 있으면 안 고쳐진다</text>
+<rect x="516" y="224" width="384" height="64" rx="6" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="538" y="252" font-family="Arial" font-size="14" font-weight="700" fill="#27354a">이슈에 답이 달리는가</text>
+<text x="538" y="276" font-family="Arial" font-size="13" fill="#536174">막혔을 때 물어볼 곳이 있는지</text>
+<rect x="516" y="300" width="384" height="64" rx="6" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="538" y="328" font-family="Arial" font-size="14" font-weight="700" fill="#27354a">라이선스 파일</text>
+<text x="538" y="352" font-family="Arial" font-size="13" fill="#536174">MIT · Apache · GPL 무엇인지</text>
+<text x="516" y="398" font-family="Arial" font-size="13" fill="#536174">공개돼 있다는 건 보증한다는 뜻이 아니다 (as is)</text>
+<text x="60" y="482" font-family="Arial" font-size="14" fill="#536174">공짜라서가 아니라, 안이 보이고 내가 고칠 수 있어서 쓴다.</text>
+</svg>`,
+        alt: "오늘 사용하는 오픈소스 MCP 프로젝트 목록과 오픈소스를 고를 때 확인할 세 가지 기준을 나란히 보여 주는 그림",
+        front: [
+          { h: "정의", p: "오픈소스는 소스 코드가 공개되어 누구나 보고, 고치고, 다시 배포할 수 있는 소프트웨어입니다. 오늘 쓰는 sketchup-mcp, freecad-mcp, rhwp는 전부 깃허브에 공개돼 있고 대부분 MIT 라이선스라 저작권 표시만 남기면 상업적으로도 쓸 수 있습니다." },
+          { h: "비유", p: "남이 그려서 공개해 둔 상세도입니다. 그대로 써도 되고 우리 현장에 맞게 고쳐 써도 되지만, 하자 보증은 없습니다. 쓰는 사람 책임입니다." }
+        ],
+        back: [
+          { h: "고르는 법", p: "최근 커밋이 언제인지, 이슈에 답이 달리는지, 라이선스 파일이 무엇인지를 봅니다. 별 개수보다 '지금도 고쳐지고 있는가'가 중요합니다." },
+          { h: "예시", p: "슬라이드의 링크 목록 — rhinomcp, freecad-mcp, rhwp, hwp-mcp, adobe_premiere_pro_mcp. 도구는 달라도 구조는 같습니다. glama.ai 같은 목록 사이트에서 새 서버를 찾습니다." },
+          { h: "다음", p: "이제 실제로 매스를 넘길 차례입니다. 스케치업이 플러그인 없이 바로 여는 교환 포맷이 DAE입니다." },
+          { h: "혼동", p: "오픈소스를 '공짜 소프트웨어'로만 이해하기 쉽습니다. 핵심은 가격이 아니라 안이 보이고 고칠 수 있다는 점이고, 대신 유지보수와 검증 책임은 쓰는 쪽에 있습니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「오픈소스 MCP 서버 및 관련 프로젝트」 · opensource.org/licenses/MIT"
+      },
+      {
+        term: "DAE (COLLADA)",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">SCREEN → FILE → SKETCHUP</text>
+<rect x="60" y="100" width="250" height="200" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="185" y="138" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">STEP 01 · 브라우저 안</text>
+<polygon points="120,240 185,205 250,240 250,268 185,285 120,268" fill="#cad9d3" stroke="#27354a" stroke-width="2"/>
+<polygon points="120,240 185,205 250,240 185,258" fill="#fffdf8" stroke="#27354a" stroke-width="2"/>
+<text x="185" y="180" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">2주차 매스</text>
+<path d="M312 200h58" stroke="#c85f43" stroke-width="5"/><polygon points="370,191 390,200 370,209" fill="#c85f43"/>
+<rect x="392" y="100" width="250" height="200" rx="8" fill="#27354a"/>
+<text x="517" y="138" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">STEP 02 · 교환 포맷</text>
+<text x="517" y="190" text-anchor="middle" font-family="Consolas, monospace" font-size="30" font-weight="700" fill="#fffdf8">.dae</text>
+<text x="517" y="222" text-anchor="middle" font-family="Arial" font-size="14" fill="#f1d6c8">COLLADA</text>
+<text x="517" y="256" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">형상 · 좌표 · 단위</text>
+<path d="M644 200h58" stroke="#c85f43" stroke-width="5"/><polygon points="702,191 722,200 702,209" fill="#c85f43"/>
+<rect x="724" y="100" width="176" height="200" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="812" y="138" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">STEP 03</text>
+<text x="812" y="182" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">SketchUp</text>
+<text x="812" y="212" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">가져오기 클릭</text>
+<rect x="744" y="236" width="136" height="34" rx="4" fill="#c85f43"/>
+<text x="812" y="259" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="#fffdf8">플러그인 불필요</text>
+<rect x="60" y="332" width="840" height="110" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="366" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">열자마자 확인할 두 가지</text>
+<text x="88" y="398" font-family="Arial" font-size="14" fill="#27354a">01 축척(Scale) · 단위 — m인지 mm인지에 따라 1000배가 난다</text>
+<text x="88" y="424" font-family="Arial" font-size="14" fill="#27354a">02 좌표 원점과 축 방향 — 누워서 들어오면 축이 안 맞는 것</text>
+</svg>`,
+        alt: "브라우저 안의 2주차 매스를 dae 파일로 내보내 스케치업에서 플러그인 없이 여는 세 단계와 확인 사항 그림",
+        front: [
+          { h: "정의", p: "COLLADA(.dae)는 서로 다른 3D 프로그램 사이에 형상을 주고받는 공개 교환 포맷입니다. 스케치업이 별도 플러그인 없이 바로 열 수 있는 몇 안 되는 표준 포맷이라, 2주차 브라우저 매스를 .dae로 내보내면 그대로 열립니다." },
+          { h: "비유", p: "서로 다른 워드프로세서가 모두 여는 PDF 같은 자리입니다. 상대 프로그램 전용 포맷은 못 열어도 이건 엽니다." }
+        ],
+        back: [
+          { h: "확인", p: "열자마자 축척과 단위부터 봅니다. m/mm이 어긋나면 1000배 크거나 작게 들어오고, 축(Z-up/Y-up)이 다르면 모델이 누워서 들어옵니다. 좌표계와 단위만 맞추면 나머지는 그대로 넘어갑니다." },
+          { h: "예시", p: "재질·텍스처는 손실되거나 단순화될 수 있습니다. 오늘 넘기는 것은 형상이고, 재질과 빛은 뒤에서 렌더 단계에 다시 입힙니다." },
+          { h: "다음", p: "열린 매스를 이제 말로 조종합니다. 그 통로가 SketchUp MCP입니다." },
+          { h: "혼동", p: "'dae면 어디서나 똑같이 열린다'고 오해하기 쉽습니다. 포맷이 같아도 단위와 축 규약이 프로그램마다 달라, 확인 없이 넘기면 축척 사고가 납니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「왜 DAE 포맷인가」 · Khronos COLLADA 규격"
+      },
+      {
+        term: "SketchUp MCP",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">ONE LINE TELLS YOU IF IT WORKS</text>
+<rect x="60" y="92" width="400" height="180" rx="10" fill="#27354a"/>
+<text x="88" y="130" font-family="Consolas, monospace" font-size="14" fill="#cad9d3"># 스케치업 서버 활성화</text>
+<text x="88" y="162" font-family="Consolas, monospace" font-size="15" fill="#fffdf8">Plugins &gt; MCP Server</text>
+<text x="88" y="190" font-family="Consolas, monospace" font-size="15" fill="#fffdf8">&gt; Start Server</text>
+<line x1="88" y1="208" x2="432" y2="208" stroke="#3d4c63" stroke-width="2"/>
+<text x="88" y="240" font-family="Consolas, monospace" font-size="14" fill="#f1d6c8">127.0.0.1:9876 SOCKET TEST</text>
+<rect x="500" y="92" width="400" height="180" rx="10" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="528" y="130" font-family="Arial" font-size="14" fill="#536174">확인은 이 한 줄</text>
+<rect x="528" y="146" width="344" height="52" rx="6" fill="#f2eee6" stroke="#c85f43" stroke-width="2"/>
+<text x="700" y="180" text-anchor="middle" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#27354a">"박스 하나 만들어 줘"</text>
+<text x="528" y="232" font-family="Arial" font-size="14" fill="#27354a">화면에 생기면 성공 · 안 생기면 실패</text>
+<text x="528" y="256" font-family="Arial" font-size="13" fill="#536174">"연결됐습니다"는 확인이 아니다</text>
+<rect x="60" y="300" width="270" height="142" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="195" y="336" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#c85f43">할 수 있는 일</text>
+<text x="195" y="368" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">물체 생성 · 이동</text>
+<text x="195" y="394" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">컴포넌트 배치</text>
+<text x="195" y="420" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">뷰 저장 · 캡처</text>
+<rect x="345" y="300" width="270" height="142" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="480" y="336" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#c85f43">있어야 하는 것</text>
+<text x="480" y="368" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">Pro 또는 Studio</text>
+<text x="480" y="394" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">프로그램이 켜져 있을 것</text>
+<text x="480" y="420" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">Start Server 클릭</text>
+<rect x="630" y="300" width="270" height="142" rx="8" fill="#b64f36"/>
+<text x="765" y="336" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#f1d6c8">안 되는 경우</text>
+<text x="765" y="368" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">Make · Free 버전</text>
+<text x="765" y="394" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">서버를 안 켠 상태</text>
+<text x="765" y="420" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">포트 번호 불일치</text>
+</svg>`,
+        alt: "스케치업 MCP 서버를 켜는 메뉴 경로와 박스 하나 만들기로 확인하는 방법, 되는 조건과 안 되는 경우를 정리한 그림",
+        front: [
+          { h: "정의", p: "SketchUp MCP는 스케치업용 MCP 서버와 Ruby 플러그인 묶음입니다. 내가 한 말을 9876 포트로 플러그인에 보내 물체 생성, 컴포넌트 배치, 뷰 저장 같은 스케치업 동작을 실제로 실행시킵니다." },
+          { h: "비유", p: "스케치업 옆에 앉아 마우스를 대신 잡아 주는 조수입니다. 내가 말하면 조수가 클릭합니다. 조수가 자리를 비우면(서버가 꺼져 있으면) 말만 허공에 남습니다." }
+        ],
+        back: [
+          { h: "확인", p: "붙였으면 '박스 하나 만들어 줘'를 시켜 봅니다. 화면에 박스가 생기면 성공이고, 안 생기면 실패입니다. 중간 다리가 끊기면 에러도 없이 조용히 아무 일도 안 일어나기 때문에 눈으로 봐야 합니다." },
+          { h: "조건", p: "스케치업 Pro 또는 Studio가 필요합니다(Make·Free 불가). 프로그램이 켜져 있어야 하고, 새로 켤 때마다 Plugins &gt; MCP Server &gt; Start Server를 눌러야 합니다." },
+          { h: "다음", p: "붙었으면 카메라부터 잡습니다. 각도를 이름 붙여 저장한 것이 Scene입니다." },
+          { h: "혼동", p: "'에러가 안 났으니 됐다'고 오해하기 쉽습니다. 이 구조는 실패해도 조용합니다. 판단은 항상 화면에 결과가 생겼는지로 합니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「붙이고, 붙었는지 본다」 · 127.0.0.1:9876"
+      },
+      {
+        term: "Scene (장면)",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">NAME THE CAMERA, CALL IT LATER</text>
+<rect x="60" y="92" width="840" height="122" rx="10" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<rect x="80" y="112" width="160" height="34" rx="4" fill="#27354a"/>
+<text x="160" y="135" text-anchor="middle" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#fffdf8">전체조감</text>
+<rect x="252" y="112" width="160" height="34" rx="4" fill="#c85f43"/>
+<text x="332" y="135" text-anchor="middle" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#fffdf8">거실</text>
+<rect x="424" y="112" width="160" height="34" rx="4" fill="#fffdf8" stroke="#27354a" stroke-width="2"/>
+<text x="504" y="135" text-anchor="middle" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#27354a">주방</text>
+<rect x="596" y="112" width="160" height="34" rx="4" fill="#fffdf8" stroke="#27354a" stroke-width="2"/>
+<text x="676" y="135" text-anchor="middle" font-family="Consolas, monospace" font-size="13" font-weight="700" fill="#27354a">침실1</text>
+<rect x="768" y="112" width="112" height="34" rx="4" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="824" y="135" text-anchor="middle" font-family="Consolas, monospace" font-size="13" fill="#536174">+ 추가</text>
+<text x="80" y="182" font-family="Arial" font-size="14" fill="#536174">장면 탭 = 카메라 위치 · 시점 · 표시 설정을 이름 붙여 저장해 둔 것</text>
+<rect x="60" y="238" width="270" height="204" rx="8" fill="#27354a"/>
+<text x="195" y="276" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">01 · 전체 조감</text>
+<polygon points="110,380 195,330 280,380 280,406 195,424 110,406" fill="#3d4c63"/>
+<polygon points="110,380 195,330 280,380 195,398" fill="#cad9d3"/>
+<text x="195" y="308" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#fffdf8">건물 전체를 한 장에</text>
+<rect x="345" y="238" width="270" height="204" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="480" y="276" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">02 · 각 실 내부</text>
+<text x="480" y="308" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#27354a">방마다 하나씩</text>
+<rect x="375" y="330" width="94" height="76" rx="4" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<rect x="483" y="330" width="94" height="76" rx="4" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<text x="422" y="374" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">거실</text>
+<text x="530" y="374" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">주방</text>
+<rect x="630" y="238" width="270" height="204" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="765" y="276" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">03 · 자동이 안 되면</text>
+<text x="765" y="312" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">손으로 잡는다</text>
+<text x="765" y="348" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">스케치업에 들어가</text>
+<text x="765" y="372" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">직접 각도를 잡고</text>
+<text x="765" y="396" text-anchor="middle" font-family="Arial" font-size="14" fill="#27354a">장면으로 저장한다</text>
+<text x="765" y="424" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">중요한 건 그다음이다</text>
+</svg>`,
+        alt: "스케치업 장면 탭에 전체조감, 거실, 주방, 침실 이름이 저장돼 있고 조감·각 실·수동 보정 세 가지를 보여 주는 그림",
+        front: [
+          { h: "정의", p: "Scene(장면)은 스케치업에서 카메라 위치·시점·표시 설정을 이름 붙여 저장해 둔 상태입니다. 한 번 저장하면 이름으로 다시 불러 같은 각도로 돌아갈 수 있고, 캡처를 반복해서 뽑을 수 있습니다." },
+          { h: "비유", p: "삼각대 다리 자리에 붙여 둔 테이프 표시입니다. 같은 자리에서 다시 찍으니 전후 비교가 되고, 남에게 '거실 뷰 다시 뽑아 줘'라고 말할 수 있습니다." }
+        ],
+        back: [
+          { h: "오늘", p: "전체 조감 한 장과 각 실 내부 한 장씩을 만듭니다. 이름을 붙여 두면 나중에 이름으로 부를 수 있어, 렌더와 과제 제출까지 같은 각도로 이어집니다." },
+          { h: "예시", p: "장면 이름을 '전체조감·거실·주방·침실1'처럼 정해 두면, 캡처 파일명과 렌더 결과 파일명이 그대로 맞아떨어집니다." },
+          { h: "다음", p: "각도만 잡아서는 조감이 비어 보입니다. 방을 채우는 것이 컴포넌트입니다." },
+          { h: "혼동", p: "장면 저장이 렌더 품질 설정 저장이라고 오해하기 쉽습니다. 장면은 카메라와 표시 상태이지 빛·재질 품질이 아닙니다. 자동 세팅이 안 되면 손으로 잡고 넘어가면 됩니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「Scene(장면)으로 저장 · 이름을 붙여 두면 이름으로 부른다」"
+      },
+      {
+        term: "컴포넌트",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">MASS BECOMES SPACE</text>
+<rect x="60" y="92" width="260" height="200" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="190" y="128" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">01 · 방을 읽는다</text>
+<rect x="92" y="150" width="196" height="112" rx="4" fill="#f2eee6" stroke="#27354a" stroke-width="2"/>
+<line x1="92" y1="274" x2="288" y2="274" stroke="#c85f43" stroke-width="2"/>
+<text x="190" y="212" text-anchor="middle" font-family="Consolas, monospace" font-size="16" font-weight="700" fill="#27354a">3.6 × 4.2 m</text>
+<path d="M334 192h34" stroke="#c85f43" stroke-width="5"/><polygon points="368,183 386,192 368,201" fill="#c85f43"/>
+<rect x="392" y="92" width="260" height="200" rx="8" fill="#27354a"/>
+<text x="522" y="128" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">02 · 컴포넌트를 놓는다</text>
+<rect x="424" y="150" width="196" height="112" rx="4" fill="#3d4c63"/>
+<rect x="438" y="164" width="76" height="44" rx="3" fill="#cad9d3"/>
+<rect x="530" y="164" width="76" height="30" rx="3" fill="#f1d6c8"/>
+<rect x="438" y="220" width="50" height="30" rx="3" fill="#f1d6c8"/>
+<rect x="504" y="204" width="102" height="46" rx="3" fill="#cad9d3"/>
+<text x="522" y="284" text-anchor="middle" font-family="Arial" font-size="12" fill="#cad9d3">미리 만들어 둔 가구 라이브러리</text>
+<path d="M666 192h34" stroke="#c85f43" stroke-width="5"/><polygon points="700,183 718,192 700,201" fill="#c85f43"/>
+<rect x="724" y="92" width="176" height="200" rx="8" fill="#b64f36"/>
+<text x="812" y="128" text-anchor="middle" font-family="Arial" font-size="13" fill="#f1d6c8">03 · 확인한다</text>
+<text x="812" y="168" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">문을 막지 않는가</text>
+<text x="812" y="200" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">동선이 나오는가</text>
+<text x="812" y="232" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">치수가 말이 되는가</text>
+<text x="812" y="268" text-anchor="middle" font-family="Arial" font-size="12" fill="#f1d6c8">이건 사람이 본다</text>
+<rect x="60" y="326" width="410" height="116" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="360" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">컴포넌트</text>
+<text x="88" y="390" font-family="Arial" font-size="14" fill="#27354a">하나를 고치면 같은 것이 전부 바뀐다</text>
+<text x="88" y="416" font-family="Arial" font-size="14" fill="#536174">표준 상세처럼 정의해 두고 계속 부른다</text>
+<rect x="490" y="326" width="410" height="116" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="518" y="360" font-family="Arial" font-size="15" font-weight="700" fill="#536174">그룹</text>
+<text x="518" y="390" font-family="Arial" font-size="14" fill="#27354a">복제본끼리 서로 따로 논다</text>
+<text x="518" y="416" font-family="Arial" font-size="14" fill="#536174">하나 고쳐도 나머지는 그대로</text>
+</svg>`,
+        alt: "방 치수를 읽고 가구 컴포넌트를 배치한 뒤 사람이 확인하는 세 단계와, 컴포넌트와 그룹의 차이를 보여 주는 그림",
+        front: [
+          { h: "정의", p: "컴포넌트는 스케치업에서 재사용할 수 있는 객체 단위입니다. 하나를 고치면 같은 컴포넌트가 전부 바뀝니다. 미리 만들어 둔 가구 컴포넌트를 방 크기에 맞춰 자동으로 배치하는 것이 오늘의 자동화 대상입니다." },
+          { h: "비유", p: "도면의 표준 상세입니다. 한 번 정의해 두고 계속 불러 쓰고, 원본을 고치면 쓰인 곳 전부에 반영됩니다." }
+        ],
+        back: [
+          { h: "순서", p: "방을 읽고(각 실의 크기와 형태) → 컴포넌트를 방 크기에 맞춰 놓고 → 확인합니다. 문을 막지 않는지, 동선이 나오는지, 치수가 말이 되는지는 사람이 봐야 합니다." },
+          { h: "차이", p: "그룹은 복제본끼리 독립이라 하나를 고쳐도 나머지가 그대로입니다. 컴포넌트는 연동됩니다. 가구처럼 반복되는 것은 컴포넌트로 만들어야 수정이 한 번에 끝납니다." },
+          { h: "다음", p: "가구까지 들어간 화면을 제안용 이미지로 바꿉니다. 그게 나노바나나입니다." },
+          { h: "혼동", p: "AI가 가구를 놓을 줄 알면 배치까지 판단한다고 오해하기 쉽습니다. 놓을 줄은 알아도 그게 쓸 수 있는 배치인지는 모릅니다. 여기까지 와야 매스가 공간으로 보입니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「가구를 배치한다 · 컴포넌트 자동화」"
+      },
+      {
+        term: "나노바나나",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">CAPTURE → IMAGE, NOT A RENDER ENGINE</text>
+<rect x="60" y="92" width="250" height="176" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="185" y="126" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">01 · VIEW</text>
+<rect x="90" y="144" width="190" height="94" rx="4" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<polygon points="110,224 185,182 260,224" fill="#cad9d3"/>
+<text x="185" y="258" text-anchor="middle" font-family="Arial" font-size="13" fill="#27354a">저장한 뷰 · 각 실</text>
+<path d="M322 180h30" stroke="#c85f43" stroke-width="5"/><polygon points="352,171 370,180 352,189" fill="#c85f43"/>
+<rect x="376" y="92" width="250" height="176" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="501" y="126" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">02 · CAPTURE</text>
+<text x="501" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="22" font-weight="700" fill="#27354a">1440px +</text>
+<text x="501" y="208" text-anchor="middle" font-family="Arial" font-size="14" fill="#536174">짧은 변 기준</text>
+<text x="501" y="240" text-anchor="middle" font-family="Arial" font-size="13" fill="#c85f43">작으면 디테일이 뭉갠다</text>
+<path d="M638 180h30" stroke="#c85f43" stroke-width="5"/><polygon points="668,171 686,180 668,189" fill="#c85f43"/>
+<rect x="692" y="92" width="208" height="176" rx="8" fill="#27354a"/>
+<text x="796" y="126" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">03 · ENGINE</text>
+<text x="796" y="172" text-anchor="middle" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#fffdf8">나노바나나</text>
+<text x="796" y="206" text-anchor="middle" font-family="Arial" font-size="14" fill="#f1d6c8">재질과 빛을 입힌다</text>
+<text x="796" y="238" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">제안용 이미지 완성</text>
+<rect x="60" y="300" width="500" height="142" rx="8" fill="#27354a"/>
+<text x="88" y="334" font-family="Consolas, monospace" font-size="13" fill="#cad9d3"># 프롬프트에 고정으로 넣는 문장</text>
+<text x="88" y="362" font-family="Consolas, monospace" font-size="14" fill="#fffdf8">exact same camera angle,</text>
+<text x="88" y="386" font-family="Consolas, monospace" font-size="14" fill="#fffdf8">consistent lighting and shadows,</text>
+<text x="88" y="410" font-family="Consolas, monospace" font-size="14" fill="#fffdf8">maintain proportions and layout</text>
+<rect x="586" y="300" width="314" height="142" rx="8" fill="#b64f36"/>
+<text x="743" y="334" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#f1d6c8">CAREFUL</text>
+<text x="743" y="366" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">치수는 보장되지 않는다</text>
+<text x="743" y="394" text-anchor="middle" font-family="Arial" font-size="14" fill="#fffdf8">없던 물건이 생기기도 한다</text>
+<text x="743" y="422" text-anchor="middle" font-family="Arial" font-size="13" fill="#f1d6c8">이건 이미지 변환이다</text>
+</svg>`,
+        alt: "저장한 뷰를 1440픽셀 이상으로 캡처해 나노바나나로 재질과 빛을 입히는 세 단계와 고정 프롬프트, 주의 사항 그림",
+        front: [
+          { h: "정의", p: "나노바나나는 캡처 이미지를 입력으로 받아 재질과 빛을 입힌 새 이미지를 만들어 주는 이미지 생성 모델입니다. 스케치업 화면 캡처를 제안용 이미지로 바꾸는 용도로 씁니다." },
+          { h: "비유", p: "스케치 위에 마카로 덧그리는 일입니다. 빠르고 그럴듯하지만 치수를 재서 그리는 게 아닙니다." }
+        ],
+        back: [
+          { h: "프롬프트", p: "exact same camera angle, consistent lighting and shadows, maintain proportions and layout — 이 세 줄을 고정으로 넣습니다. 안 넣으면 카메라가 돌아가고 비례가 무너집니다." },
+          { h: "입력", p: "캡처는 짧은 변 1440px 이상으로 뽑습니다. 작으면 디테일이 뭉개져서 결과가 흐려집니다. 원본과 렌더를 나란히 두고 비교하는 것이 과제이기도 합니다." },
+          { h: "다음", p: "이미지가 나왔으면 문서 차례입니다. 실무 결과물은 결국 한글로 나갑니다 — rhwp." },
+          { h: "혼동", p: "'렌더'라고 부르지만 렌더링 엔진이 아니라 이미지 변환입니다. 치수는 보장되지 않고 없던 물건이 생기기도 합니다. 제안용까지이고 실사 검증용은 아닙니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「캡처를 렌더로 바꾼다 · CAREFUL」"
+      },
+      {
+        term: "rhwp",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">CSV IN, HWP OUT</text>
+<rect x="60" y="92" width="240" height="150" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="180" y="128" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">STEP 01 · INPUT</text>
+<text x="180" y="172" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">대지 조사서</text>
+<text x="180" y="200" text-anchor="middle" font-family="Consolas, monospace" font-size="15" fill="#c85f43">.csv</text>
+<text x="180" y="226" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">2주차 결과물</text>
+<path d="M312 167h30" stroke="#c85f43" stroke-width="5"/><polygon points="342,158 360,167 342,176" fill="#c85f43"/>
+<rect x="366" y="92" width="270" height="150" rx="8" fill="#27354a"/>
+<text x="501" y="128" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">STEP 02 · ENGINE</text>
+<text x="501" y="174" text-anchor="middle" font-family="Consolas, monospace" font-size="24" font-weight="700" fill="#fffdf8">rhwp</text>
+<text x="501" y="204" text-anchor="middle" font-family="Arial" font-size="13" fill="#f1d6c8">Rust / WASM · MIT</text>
+<text x="501" y="228" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">HWP 바이너리를 직접 생성</text>
+<path d="M648 167h30" stroke="#c85f43" stroke-width="5"/><polygon points="678,158 696,167 678,176" fill="#c85f43"/>
+<rect x="702" y="92" width="198" height="150" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="801" y="128" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">STEP 03 · DOC</text>
+<rect x="732" y="144" width="138" height="76" rx="3" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<line x1="746" y1="166" x2="856" y2="166" stroke="#27354a" stroke-width="2"/>
+<line x1="746" y1="188" x2="856" y2="188" stroke="#c8c0b2" stroke-width="2"/>
+<line x1="801" y1="152" x2="801" y2="212" stroke="#c8c0b2" stroke-width="2"/>
+<text x="801" y="238" text-anchor="middle" font-family="Consolas, monospace" font-size="14" font-weight="700" fill="#27354a">.hwp 한 장</text>
+<rect x="60" y="278" width="420" height="164" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="312" font-family="Arial" font-size="14" font-weight="700" fill="#c85f43">오늘 쓰는 명령</text>
+<text x="88" y="344" font-family="Consolas, monospace" font-size="14" fill="#27354a">$ create-blank</text>
+<text x="280" y="344" font-family="Arial" font-size="13" fill="#536174">빈 문서를 만든다</text>
+<text x="88" y="372" font-family="Consolas, monospace" font-size="14" fill="#27354a">$ create-table</text>
+<text x="280" y="372" font-family="Arial" font-size="13" fill="#536174">표를 넣는다</text>
+<text x="88" y="400" font-family="Consolas, monospace" font-size="14" fill="#27354a">$ set-cell-text</text>
+<text x="280" y="400" font-family="Arial" font-size="13" fill="#536174">칸에 값을 넣는다</text>
+<text x="88" y="428" font-family="Consolas, monospace" font-size="14" fill="#27354a">$ render</text>
+<text x="280" y="428" font-family="Arial" font-size="13" fill="#536174">이미지로 열어 본다</text>
+<rect x="500" y="278" width="400" height="164" rx="8" fill="#b64f36"/>
+<text x="528" y="312" font-family="Arial" font-size="14" font-weight="700" fill="#f1d6c8">여기서 두 번 걸린다</text>
+<text x="528" y="344" font-family="Consolas, monospace" font-size="13" fill="#fffdf8">EXIT=127 인데 파일은 정상</text>
+<text x="528" y="368" font-family="Arial" font-size="13" fill="#f1d6c8">오류 코드가 아니라 파일로 판단</text>
+<text x="528" y="402" font-family="Consolas, monospace" font-size="13" fill="#fffdf8">"controlIdx": 2 ← 0이 아니다</text>
+<text x="528" y="426" font-family="Arial" font-size="13" fill="#f1d6c8">앞 명령의 출력을 읽어서 넣는다</text>
+</svg>`,
+        alt: "CSV를 rhwp 엔진에 넣어 표가 채워진 한글 문서를 만드는 흐름과 명령 목록, 두 가지 함정을 정리한 그림",
+        front: [
+          { h: "정의", p: "rhwp는 한글 문서(.hwp)를 직접 생성하는 오픈소스 엔진입니다(Rust/WASM, MIT 라이선스). 한컴 한글 프로그램을 원격 조종하는 방식이 아니라 HWP 바이너리 파일을 직접 써서 만들기 때문에, 계정도 API 키도 없이 Node.js만 있으면 실행됩니다." },
+          { h: "비유", p: "워드 프로그램을 켜서 사람이 타이핑하는 대신, 파일 자체를 조판해서 찍어내는 인쇄기입니다. 한글이 안 깔린 서버에서도 문서가 나옵니다." }
+        ],
+        back: [
+          { h: "명령", p: "create-blank로 빈 문서를 만들고, create-table로 표를 넣고, set-cell-text로 칸에 값을 넣고, render로 이미지로 열어 확인합니다. 2주차 대지 조사서 CSV 값이 표에 자동으로 들어갑니다." },
+          { h: "함정", p: "첫째, 성공했는데 EXIT=127 오류처럼 보입니다 — 파일이 생겼는지로 판단합니다. 둘째, create-table이 알려 주는 controlIdx는 0이 아닙니다. 그 값을 읽어서 set-cell-text --control 값에 그대로 넣어야 합니다. 추측하면 셀 접근에 실패합니다." },
+          { h: "다음", p: "문서까지 나왔으면 CAD로 넘어갑니다. 구조는 스케치업과 똑같은 FreeCAD MCP입니다." },
+          { h: "혼동", p: "한컴 한글이 설치돼 있어야 한다고 오해하기 쉽습니다. 필요 없습니다. 또 오류 코드로 성패를 판단하면 멀쩡한 결과를 실패로 착각합니다." }
+        ],
+        source: "참고: github.com/edwardkim/rhwp · edwardkim.github.io/rhwp (MIT License)"
+      },
+      {
+        term: "FreeCAD MCP",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">SAME SHAPE, DIFFERENT DOOR</text>
+<rect x="60" y="92" width="420" height="176" rx="8" fill="#27354a"/>
+<text x="88" y="128" font-family="Consolas, monospace" font-size="14" fill="#cad9d3">Claude Code</text>
+<text x="104" y="156" font-family="Consolas, monospace" font-size="14" fill="#fffdf8">└─ stdio ─▶ freecad-mcp</text>
+<text x="128" y="184" font-family="Consolas, monospace" font-size="14" fill="#fffdf8">└─ XML-RPC 127.0.0.1:9875</text>
+<text x="152" y="212" font-family="Consolas, monospace" font-size="14" fill="#f1d6c8">└─▶ FreeCAD 애드온</text>
+<line x1="88" y1="228" x2="452" y2="228" stroke="#3d4c63" stroke-width="2"/>
+<text x="88" y="254" font-family="Consolas, monospace" font-size="13" fill="#cad9d3">포트가 스케치업(9876)과 다르다</text>
+<rect x="500" y="92" width="400" height="176" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="528" y="128" font-family="Arial" font-size="14" font-weight="700" fill="#c85f43">FreeCAD 쪽 설정</text>
+<text x="528" y="162" font-family="Consolas, monospace" font-size="14" fill="#27354a">워크벤치 목록 &gt; MCP Addon</text>
+<rect x="528" y="180" width="240" height="34" rx="4" fill="#c85f43"/>
+<text x="648" y="203" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#fffdf8">Start RPC Server</text>
+<text x="528" y="246" font-family="Arial" font-size="13" fill="#536174">파라메트릭 CAD · 오픈소스 · 무료</text>
+<rect x="60" y="300" width="840" height="142" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="334" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">첫 실행에서는 아무것도 안 된다 — Welcome 창이 떠 있을 때</text>
+<text x="88" y="368" font-family="Arial" font-size="14" fill="#536174">연결 확인</text>
+<text x="300" y="368" font-family="Arial" font-size="14" fill="#27354a">✔ 정상 응답</text>
+<text x="560" y="368" font-family="Arial" font-size="14" fill="#536174">창을 닫고 재시작하면</text>
+<text x="820" y="368" font-family="Arial" font-size="14" font-weight="700" fill="#27354a">✔ 정상</text>
+<line x1="88" y1="382" x2="872" y2="382" stroke="#e0dbd0" stroke-width="2"/>
+<text x="88" y="410" font-family="Arial" font-size="14" fill="#536174">문서·물체 만들기</text>
+<text x="300" y="410" font-family="Arial" font-size="14" font-weight="700" fill="#b64f36">✘ 30초 기다려도 무응답</text>
+<text x="820" y="410" font-family="Arial" font-size="14" font-weight="700" fill="#27354a">✔ 0.1초</text>
+<text x="88" y="436" font-family="Arial" font-size="13" fill="#536174">연결은 "성공"으로 보이는데 작업만 안 된다 — 한 번 켜서 Welcome 창을 닫고 시작한다.</text>
+</svg>`,
+        alt: "freecad-mcp가 XML-RPC 9875로 프리캐드 애드온에 연결되는 경로와 Welcome 창이 떠 있을 때 작업만 무응답인 비교표 그림",
+        front: [
+          { h: "정의", p: "FreeCAD MCP는 오픈소스 파라메트릭 CAD인 FreeCAD에 붙이는 MCP 서버와 애드온입니다. XML-RPC로 127.0.0.1:9875에 연결해 문서 생성, 물체 생성, 내보내기를 말로 시킵니다. 구조는 스케치업과 똑같습니다." },
+          { h: "비유", p: "같은 통역 구조에 건물만 다른 것입니다. 한 번 이해하면 다음 도구는 같은 그림이라, Rhino든 Revit이든 플러그인 이름만 바뀝니다." }
+        ],
+        back: [
+          { h: "함정", p: "첫 실행에서 Welcome 창이 떠 있으면 연결 확인은 '정상'으로 응답하는데 문서 만들기·물체 만들기는 30초를 기다려도 무응답입니다. FreeCAD를 한 번 켜서 Welcome 창을 닫고 재시작하면 0.1초에 반응합니다." },
+          { h: "포트", p: "9875를 씁니다. 스케치업(9876)과 한 자리 차이라 설정 파일에 잘못 적기 쉽고, 그러면 조용히 아무 일도 안 일어납니다." },
+          { h: "다음", p: "CAD로 나가는 순간 실무 파이프라인에 들어갑니다. 내보내기 포맷이 DXF와 DWG입니다." },
+          { h: "혼동", p: "'연결됐습니다'를 작동 확인으로 착각하기 쉽습니다. 연결과 실행은 다른 단계입니다. 문서와 물체가 실제로 생기는지로 판단합니다." }
+        ],
+        source: "참고: github.com/neka-nat/freecad-mcp · 3주차 슬라이드 「FreeCAD 주의」"
+      },
+      {
+        term: "DXF · DWG",
+        group: "tool",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">INTO THE REAL PIPELINE</text>
+<rect x="60" y="96" width="240" height="180" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="180" y="132" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">FreeCAD 문서</text>
+<rect x="96" y="150" width="168" height="86" rx="4" fill="#f2eee6" stroke="#c8c0b2" stroke-width="2"/>
+<line x1="112" y1="176" x2="248" y2="176" stroke="#27354a" stroke-width="2"/>
+<line x1="112" y1="200" x2="200" y2="200" stroke="#27354a" stroke-width="2"/>
+<line x1="112" y1="222" x2="230" y2="222" stroke="#c8c0b2" stroke-width="2"/>
+<text x="180" y="262" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">평면 · 형상</text>
+<path d="M312 186h34" stroke="#c85f43" stroke-width="5"/><polygon points="346,177 364,186 346,195" fill="#c85f43"/>
+<rect x="370" y="96" width="240" height="180" rx="8" fill="#27354a"/>
+<text x="490" y="134" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">기본 내보내기</text>
+<text x="490" y="184" text-anchor="middle" font-family="Consolas, monospace" font-size="30" font-weight="700" fill="#fffdf8">.dxf</text>
+<text x="490" y="218" text-anchor="middle" font-family="Arial" font-size="14" fill="#f1d6c8">공개 규격 · 대부분 열린다</text>
+<text x="490" y="248" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">FreeCAD에서 바로 나간다</text>
+<path d="M622 186h34" stroke="#c85f43" stroke-width="5" stroke-dasharray="7 5"/><polygon points="656,177 674,186 656,195" fill="#c85f43"/>
+<rect x="680" y="96" width="220" height="180" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="790" y="134" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">한 단계 더</text>
+<text x="790" y="184" text-anchor="middle" font-family="Consolas, monospace" font-size="30" font-weight="700" fill="#27354a">.dwg</text>
+<rect x="704" y="204" width="172" height="34" rx="4" fill="#c85f43"/>
+<text x="790" y="227" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="#fffdf8">ODA File Converter</text>
+<text x="790" y="258" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">따로 설치해서 변환</text>
+<rect x="60" y="312" width="840" height="130" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="346" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">CAD로 나가는 순간 확인할 것</text>
+<text x="88" y="378" font-family="Arial" font-size="14" fill="#27354a">01 단위와 축척 — 도면 1:1로 떨어지는가</text>
+<text x="88" y="404" font-family="Arial" font-size="14" fill="#27354a">02 레이어 이름 — 협업 규칙에 맞는가</text>
+<text x="88" y="430" font-family="Arial" font-size="14" fill="#27354a">03 열어 보기 — 받는 쪽 프로그램에서 실제로 열리는지 확인</text>
+</svg>`,
+        alt: "프리캐드 문서를 DXF로 바로 내보내고 DWG는 ODA File Converter를 거치는 흐름과 확인 사항 그림",
+        front: [
+          { h: "정의", p: "DXF는 CAD 도면을 주고받는 공개 교환 포맷이고, DWG는 오토캐드의 기본 포맷입니다. FreeCAD는 DXF로 바로 내보내고, DWG가 필요하면 ODA File Converter를 따로 깔아 변환합니다." },
+          { h: "비유", p: "DXF는 어디서나 읽히는 공용 서식, DWG는 특정 사무실이 쓰는 자체 서식입니다. 공용으로 내보낸 뒤 필요할 때 변환기를 한 번 더 거칩니다." }
+        ],
+        back: [
+          { h: "의미", p: "CAD로 나가는 순간 실무 파이프라인에 들어갑니다. 여기서부터는 협업 상대가 여는 파일이라, 단위·축척·레이어 이름이 규칙에 맞는지가 결과물의 품질을 정합니다." },
+          { h: "확인", p: "내보낸 파일을 받는 쪽 프로그램에서 직접 열어 봅니다. '내보내기 완료' 메시지는 열린다는 보장이 아닙니다." },
+          { h: "다음", p: "여기까지 만든 것을 남이 볼 수 있게 올립니다. 오늘은 git 없이 배포합니다." },
+          { h: "혼동", p: "DXF와 DWG를 같은 것으로 보기 쉽습니다. 이름만 비슷하고 규격이 다르며, DWG 변환에는 별도 도구가 필요합니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「DWG로 내보내려면 ODA File Converter」"
+      },
+      {
+        term: "배포 (No-Git)",
+        group: "ship",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">ONE COMMAND, ONE URL</text>
+<rect x="60" y="96" width="196" height="170" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="158" y="132" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">01</text>
+<text x="158" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">내 폴더</text>
+<text x="158" y="208" text-anchor="middle" font-family="Arial" font-size="14" fill="#536174">오늘 만든 것들</text>
+<text x="158" y="238" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">아직 나만 본다</text>
+<path d="M268 181h24" stroke="#c85f43" stroke-width="5"/><polygon points="292,172 310,181 292,190" fill="#c85f43"/>
+<rect x="316" y="96" width="196" height="170" rx="8" fill="#27354a"/>
+<text x="414" y="132" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">02</text>
+<text x="414" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#fffdf8">npx vercel</text>
+<text x="414" y="208" text-anchor="middle" font-family="Arial" font-size="14" fill="#f1d6c8">오늘 git은 안 쓴다</text>
+<text x="414" y="238" text-anchor="middle" font-family="Arial" font-size="13" fill="#cad9d3">폴더 안에서 한 줄</text>
+<path d="M524 181h24" stroke="#c85f43" stroke-width="5"/><polygon points="548,172 566,181 548,190" fill="#c85f43"/>
+<rect x="572" y="96" width="152" height="170" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="648" y="132" text-anchor="middle" font-family="Arial" font-size="13" fill="#536174">03</text>
+<text x="648" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#27354a">첫 배포</text>
+<text x="648" y="208" text-anchor="middle" font-family="Arial" font-size="14" fill="#536174">바로 프로덕션</text>
+<path d="M736 181h24" stroke="#c85f43" stroke-width="5"/><polygon points="760,172 778,181 760,190" fill="#c85f43"/>
+<rect x="784" y="96" width="116" height="170" rx="8" fill="#b64f36"/>
+<text x="842" y="132" text-anchor="middle" font-family="Arial" font-size="13" fill="#f1d6c8">04</text>
+<text x="842" y="176" text-anchor="middle" font-family="Consolas, monospace" font-size="17" font-weight="700" fill="#fffdf8">URL</text>
+<text x="842" y="208" text-anchor="middle" font-family="Arial" font-size="14" fill="#f1d6c8">서로 열어본다</text>
+<rect x="60" y="306" width="410" height="136" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="340" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">올라가는 것</text>
+<text x="88" y="372" font-family="Arial" font-size="14" fill="#27354a">HTML · 코드 · 이미지 — 브라우저가 여는 것</text>
+<text x="88" y="400" font-family="Arial" font-size="14" fill="#27354a">누구나 URL로 접근 가능</text>
+<text x="88" y="426" font-family="Arial" font-size="13" fill="#536174">내 컴퓨터를 꺼도 살아 있다</text>
+<rect x="490" y="306" width="410" height="136" rx="8" fill="#27354a"/>
+<text x="518" y="340" font-family="Arial" font-size="15" font-weight="700" fill="#f1d6c8">안 올라가는 것</text>
+<text x="518" y="372" font-family="Arial" font-size="14" fill="#fffdf8">MCP 연결 — 내 컴퓨터에서만 돈다</text>
+<text x="518" y="400" font-family="Arial" font-size="14" fill="#fffdf8">스케치업 · FreeCAD 자체</text>
+<text x="518" y="426" font-family="Arial" font-size="13" fill="#cad9d3">배포본에서 도구가 움직이지는 않는다</text>
+</svg>`,
+        alt: "내 폴더에서 npx vercel 한 줄로 배포해 URL을 받는 네 단계와, 올라가는 것과 올라가지 않는 것을 구분한 그림",
+        front: [
+          { h: "정의", p: "배포는 만든 폴더를 호스팅에 올려 누구나 URL로 열 수 있게 만드는 일입니다. 오늘은 git 없이 Vercel로 올립니다. 폴더 안에서 npx vercel 한 줄이면 몇 분 뒤에 주소가 나옵니다." },
+          { h: "비유", p: "도면을 인쇄해 현장 게시판에 붙이는 것입니다. 내 책상 서랍에만 있으면 아무도 못 봅니다." }
+        ],
+        back: [
+          { h: "순서", p: "폴더로 이동해 npx vercel 을 실행합니다. 처음이면 브라우저가 열려 로그인하고, 프로젝트 이름과 폴더를 묻는 질문에 엔터만 눌러도 됩니다. 끝나면 터미널 마지막 줄에 URL이 찍힙니다. 2주차의 GitHub·Vercel 흐름과 목적은 같고, 오늘은 git 단계를 건너뜁니다." },
+          { h: "주의", p: "첫 배포는 --prod 를 안 붙여도 바로 프로덕션이 됩니다. 그 다음부터는 npx vercel --prod 로 올려야 같은 주소가 갱신되고, 그냥 npx vercel 은 미리보기 주소가 따로 생깁니다." },
+          { h: "키", p: ".env 파일은 올리지 말고 Vercel 프로젝트 설정의 환경변수에 직접 넣습니다. 화면 공유 중에 키가 화면에 박히지 않게 조심합니다. 다루는 법은 다음 카드입니다." },
+          { h: "혼동", p: "배포하면 오늘 만든 MCP 자동화까지 웹에서 돈다고 오해하기 쉽습니다. 올라가는 건 웹 화면이고, 스케치업·FreeCAD를 움직이는 부분은 내 컴퓨터에서만 동작합니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「오늘 GIT은 안 쓴다 · NO-GIT DEPLOYMENT」"
+      },
+      {
+        term: "API 키 · 환경변수",
+        group: "ship",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">KEYS GO IN BY HAND</text>
+<rect x="60" y="92" width="410" height="200" rx="8" fill="#fffdf8" stroke="#27354a" stroke-width="3"/>
+<text x="88" y="128" font-family="Arial" font-size="14" font-weight="700" fill="#27354a">코드 안에 박아 두면</text>
+<rect x="88" y="146" width="354" height="60" rx="4" fill="#f2eee6" stroke="#b64f36" stroke-width="2"/>
+<text x="108" y="182" font-family="Consolas, monospace" font-size="14" fill="#b64f36">const key = "abcd-1234-실제키"</text>
+<text x="88" y="238" font-family="Arial" font-size="14" fill="#536174">화면 공유·스크린샷·저장소에 그대로 남는다</text>
+<text x="88" y="266" font-family="Arial" font-size="14" fill="#b64f36">한 번 새면 키는 폐기하고 다시 발급해야 한다</text>
+<rect x="490" y="92" width="410" height="200" rx="8" fill="#27354a"/>
+<text x="518" y="128" font-family="Arial" font-size="14" font-weight="700" fill="#f1d6c8">환경변수로 빼 두면</text>
+<rect x="518" y="146" width="354" height="60" rx="4" fill="#3d4c63"/>
+<text x="538" y="176" font-family="Consolas, monospace" font-size="14" fill="#cad9d3">.env</text>
+<text x="600" y="176" font-family="Consolas, monospace" font-size="14" fill="#fffdf8">VWORLD_KEY=…</text>
+<text x="538" y="196" font-family="Consolas, monospace" font-size="13" fill="#cad9d3">코드는 이름만 부른다</text>
+<text x="518" y="238" font-family="Arial" font-size="14" fill="#fffdf8">배포할 때 호스팅 설정에 직접 입력</text>
+<text x="518" y="266" font-family="Arial" font-size="14" fill="#cad9d3">파일은 저장소에 올리지 않는다</text>
+<rect x="60" y="328" width="840" height="114" rx="8" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="362" font-family="Arial" font-size="15" font-weight="700" fill="#c85f43">오늘 쓰는 것 중 키가 필요한 것 / 필요 없는 것</text>
+<text x="88" y="396" font-family="Arial" font-size="14" fill="#27354a">필요함 — 2주차 지도·필지 API, 이미지 생성 서비스</text>
+<text x="88" y="424" font-family="Arial" font-size="14" fill="#536174">필요 없음 — MCP 연결(로컬), rhwp(Node.js만 있으면 실행)</text>
+</svg>`,
+        alt: "코드에 키를 박아 둔 경우와 환경변수로 분리한 경우를 비교하고, 키가 필요한 것과 필요 없는 것을 정리한 그림",
+        front: [
+          { h: "정의", p: "API 키는 서비스가 '누가 부르는지' 확인하는 비밀번호이고, 환경변수는 그 값을 코드 바깥 파일(.env)이나 호스팅 설정에 따로 두는 방법입니다. 코드는 값 대신 이름만 부릅니다." },
+          { h: "비유", p: "열쇠를 현관문에 테이프로 붙여 두지 않고 열쇠고리에 따로 두는 것입니다. 문(코드)은 공개해도 열쇠는 공개되지 않습니다." }
+        ],
+        back: [
+          { h: "실습", p: "오늘 배포에서 환경변수 파일은 복사·붙여넣기 대상이 아니라 호스팅 설정에 직접 넣습니다. 화면 공유 중이라면 값이 화면에 뜨지 않게 주의합니다." },
+          { h: "구분", p: "2주차 지도·필지 API와 이미지 생성 서비스는 키가 필요하고, 오늘의 MCP 연결과 rhwp는 키가 필요 없습니다. 전부 내 컴퓨터 안에서 도는 일이기 때문입니다." },
+          { h: "다음", p: "올렸다고 끝이 아닙니다. 마지막은 결과물로 확인하는 습관입니다." },
+          { h: "혼동", p: "키를 숨기려고 코드 주석 처리만 하는 경우가 있습니다. 저장소 기록에는 그대로 남습니다. 노출된 키는 지우는 게 아니라 폐기하고 다시 발급받아야 합니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「키가 들어간 파일은 직접 넣는다」 · 2주차 .env 카드"
+      },
+      {
+        term: "검증",
+        group: "ship",
+        image: `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520">
+<rect width="960" height="520" fill="#f2eee6"/>
+<text x="60" y="52" font-family="Arial" font-size="18" font-weight="700" fill="#27354a">DON'T TRUST THE WORD, LOOK AT THE RESULT</text>
+<rect x="60" y="92" width="840" height="52" rx="6" fill="#27354a"/>
+<text x="88" y="125" font-family="Arial" font-size="14" font-weight="700" fill="#fffdf8">도구</text>
+<text x="330" y="125" font-family="Arial" font-size="14" font-weight="700" fill="#f1d6c8">믿으면 안 되는 것</text>
+<text x="620" y="125" font-family="Arial" font-size="14" font-weight="700" fill="#f1d6c8">확인하는 방법</text>
+<rect x="60" y="152" width="840" height="78" rx="6" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="198" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#27354a">SketchUp MCP</text>
+<text x="330" y="198" font-family="Arial" font-size="14" fill="#b64f36">"연결됐습니다"</text>
+<text x="620" y="198" font-family="Arial" font-size="14" fill="#27354a">박스 하나가 화면에 생기는가</text>
+<rect x="60" y="238" width="840" height="78" rx="6" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="284" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#27354a">rhwp</text>
+<text x="330" y="276" font-family="Arial" font-size="14" fill="#b64f36">오류 코드</text>
+<text x="330" y="298" font-family="Arial" font-size="12" fill="#536174">성공해도 127이 뜬다</text>
+<text x="620" y="284" font-family="Arial" font-size="14" fill="#27354a">파일이 생겼는가 · render로 열어보기</text>
+<rect x="60" y="324" width="840" height="78" rx="6" fill="#fffdf8" stroke="#c8c0b2" stroke-width="2"/>
+<text x="88" y="370" font-family="Consolas, monospace" font-size="15" font-weight="700" fill="#27354a">FreeCAD MCP</text>
+<text x="330" y="370" font-family="Arial" font-size="14" fill="#b64f36">"연결됐습니다"</text>
+<text x="620" y="370" font-family="Arial" font-size="14" fill="#27354a">문서와 물체가 생기는가</text>
+<rect x="60" y="422" width="840" height="52" rx="6" fill="#b64f36"/>
+<text x="480" y="454" text-anchor="middle" font-family="Arial" font-size="16" font-weight="700" fill="#fffdf8">"됐습니다"는 확인이 아니다</text>
+</svg>`,
+        alt: "스케치업 MCP, rhwp, 프리캐드 MCP 각각에 대해 믿으면 안 되는 응답과 결과물로 확인하는 방법을 정리한 표 그림",
+        front: [
+          { h: "정의", p: "검증은 도구가 '됐습니다'라고 말하는 것과 실제로 된 것을 구분하는 습관입니다. 오늘 쓰는 세 도구 모두 말이 아니라 결과물로 확인합니다." },
+          { h: "비유", p: "시공 확인과 같습니다. 반장이 '다 했습니다'라고 해도 현장에 가서 눈으로 봅니다. 보고와 시공은 다른 일입니다." }
+        ],
+        back: [
+          { h: "방법", p: "SketchUp MCP는 박스 하나가 화면에 생기는지, rhwp는 파일이 생겼는지와 render로 열리는지, FreeCAD MCP는 문서와 물체가 생기는지로 봅니다. 셋 다 눈으로 확인 가능한 결과물입니다." },
+          { h: "이유", p: "이 구조는 조용히 실패합니다. 다리 하나가 끊겨도 에러를 내지 않고 아무 일도 안 하기 때문에, 에러가 없다는 사실만으로는 아무것도 증명되지 않습니다." },
+          { h: "과제", p: "매스 + 뷰 캡처(조감 하나, 각 실 하나 이상), 캡처와 렌더를 나란히 둔 이미지, 2주차 조사서 값이 표에 들어간 한글 문서 한 장." },
+          { h: "혼동", p: "'오류가 안 났으니 성공'이라는 판단이 가장 흔한 함정입니다. rhwp는 반대로 성공해도 오류 코드가 뜹니다. 코드가 아니라 결과물을 봅니다." }
+        ],
+        source: "참고: 3주차 슬라이드 「오늘 확인하는 방법」 · 마무리 세 줄"
+      }
+    ];
+
+    const terms = document.querySelector(".terms");
+    const card = document.querySelector(".card");
+    const front = document.querySelector(".front");
+    const back = document.querySelector(".back");
+    const flipButton = document.getElementById("flip");
+    const current = document.getElementById("current");
+    let index = 0;
+    let flipped = false;
+
+    const blocks = (items) => items.map((item) => `<section class="block"><h3>${item.h}</h3><p>${item.p}</p></section>`).join("");
+    const groupMeta = { core: "MCP 구조", tool: "도구", ship: "마무리" };
+
+    terms.innerHTML = Object.keys(groupMeta).map((id) => `
+      <div class="group" data-group="${id}">
+        <p class="group-label">${groupMeta[id]}</p>
+        ${cards.map((item, i) => item.group !== id ? "" : `
+          <button class="term" type="button" data-index="${i}">
+            <span class="term-number">${String(i + 1).padStart(2, "0")}</span>
+            <span class="term-name">${item.term}</span>
+          </button>`).join("")}
+      </div>`).join("");
+
+    function render() {
+      const item = cards[index];
+      card.classList.add("is-snap");
+      front.innerHTML = `
+        <div class="face-head"><h2>${item.term}</h2><span class="side-label">DEFINITION</span></div>
+        <div class="front-body">
+          <figure class="visual" role="img" aria-label="${item.alt}">${item.image}</figure>
+          <div class="copy">${blocks(item.front)}</div>
+        </div>`;
+      back.innerHTML = `
+        <div class="face-head"><h2>${item.term}</h2><span class="side-label">MORE DETAIL</span></div>
+        <div class="back-body">
+          <div class="back-copy">${blocks(item.back)}</div>
+          <p class="source">${item.source}</p>
+        </div>`;
+      flipped = false;
+      card.classList.remove("is-flipped");
+      flipButton.setAttribute("aria-pressed", "false");
+      flipButton.textContent = "설명 뒤집기";
+      current.textContent = String(index + 1).padStart(2, "0");
+      document.querySelectorAll(".term").forEach((button) => {
+        const active = Number(button.dataset.index) === index;
+        button.toggleAttribute("aria-current", active);
+        if (active) button.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      });
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => card.classList.remove("is-snap"));
+      });
+    }
+
+    function go(nextIndex) {
+      index = (nextIndex + cards.length) % cards.length;
+      render();
+    }
+
+    function flip() {
+      flipped = !flipped;
+      card.classList.toggle("is-flipped", flipped);
+      flipButton.setAttribute("aria-pressed", String(flipped));
+      flipButton.textContent = flipped ? "정의로 돌아가기" : "설명 뒤집기";
+    }
+
+    terms.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-index]");
+      if (button) go(Number(button.dataset.index));
+    });
+    document.getElementById("prev").addEventListener("click", () => go(index - 1));
+    document.getElementById("next").addEventListener("click", () => go(index + 1));
+    flipButton.addEventListener("click", flip);
+    card.addEventListener("click", flip);
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        flip();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") go(index - 1);
+      if (event.key === "ArrowRight") go(index + 1);
+    });
+
+    render();
+  </script>
+</body>
+</html>
